@@ -1,0 +1,11 @@
+# Copy this file to illumio-k3s.yaml and update the below info
+# pce_url in the format of fqdn:port
+pce_url: illumio-pce-38.talabs.net:8443
+# cluster_id and cluster_token are copied from the pce when the container cluster is created
+cluster_id: 71f72561-30f8-4ca2-9f8c-6e4d2bbf5929
+cluster_token: 1_a0cb79ece71f55aca06741771811b1bed96e050c91eabdf8625871045beb62a0
+# cluster_code is the pairing key from the pce for your kubernetes nodes
+cluster_code: 15113aa86a03d88e24e4800eee68a4a2ff70fac6d01eb0b8f26bf093253671299d883c690bd5adc0a
+containerRuntime: k3s_containerd
+containerManager: kubernetes
+ignore_cert: false

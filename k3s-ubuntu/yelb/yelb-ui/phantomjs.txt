@@ -1,0 +1,3 @@
+Note: If you're rebuilding or trying to run on an ARM64 system, you will need the phantomjs
+binary that you can download from this location on github and add to your path (e.g. /usr/local/bin)
+https://github.com/mclemens68/yelb/blob/master/yelb-ui/phantomjs
