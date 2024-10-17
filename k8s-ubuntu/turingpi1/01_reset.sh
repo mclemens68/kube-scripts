@@ -1,5 +1,5 @@
 # Clean all docker containers and images
-docker system prune -af
+sudo docker system prune -af
 # Reset kubernetes cluster
 sudo kubeadm reset -f
 sudo rm -rf /etc/cni/net.d

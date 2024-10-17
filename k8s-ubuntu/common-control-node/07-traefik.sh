@@ -1,5 +1,5 @@
 # Add Traefik repository to Helm, uncomment the first time 
-# helm repo add traefik https://traefik.github.io/charts
+helm repo add traefik https://traefik.github.io/charts
 
 # Check the added repository
 helm search repo traefik

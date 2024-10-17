@@ -5,7 +5,7 @@ networking:
   serviceSubnet: 10.96.0.0/16
   podSubnet: 10.244.0.0/16
   dnsDomain: cluster.local
-kubernetesVersion: v1.28.0
+kubernetesVersion: v1.29.0
 controlPlaneEndpoint: 192.168.40.18
 ---
 kind: KubeletConfiguration
