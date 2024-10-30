@@ -2,6 +2,9 @@ sudo apt update
 sudo apt -y upgrade
 sudo apt -y install vim git netcat chrony
 
+# Install Illumio VEN required packages
+sudo apt -y install curl dnsutils sed ipset libcap2 libgmp10 libmnl0 libnfnetlink0 net-tools uuid-runtime
+
 # Set time zone
 sudo timedatectl set-timezone America/Chicago
 
@@ -53,6 +56,9 @@ sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/con
 
 sudo systemctl restart containerd
 sudo systemctl enable containerd
+
+# Make sure we're using legacy iptables
+sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 # Install Kubernetes (v1.29)
 sudo apt-get install -y apt-transport-https ca-certificates curl

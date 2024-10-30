@@ -10,9 +10,9 @@ sudo iptables -t mangle -F
 sudo iptables -X
 sudo nft flush ruleset
 # Reset and reboot nodes
-ssh -t ubuntu@k8s-wk1-u-priv.clemenslabs.com '/home/ubuntu/reset.sh'
-ssh -t ubuntu@k8s-wk2-u-priv.clemenslabs.com '/home/ubuntu/reset.sh'
-ssh -t ubuntu@k8s-wk1-u-priv.clemenslabs.com 'sudo reboot'
-ssh -t ubuntu@k8s-wk2-u-priv.clemenslabs.com 'sudo reboot'
+ssh -t ec2-user@k8s-wk1-a-priv.clemenslabs.com '/home/ubuntu/reset.sh'
+ssh -t ec2-user@k8s-wk2-a-priv.clemenslabs.com '/home/ubuntu/reset.sh'
+ssh -t ec2-user@k8s-wk1-a-priv.clemenslabs.com 'sudo reboot'
+ssh -t ec2-user@k8s-wk2-a-priv.clemenslabs.com 'sudo reboot'
 # Reboot control node
 sudo reboot
