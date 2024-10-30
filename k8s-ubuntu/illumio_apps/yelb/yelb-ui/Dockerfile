@@ -1,0 +1,76 @@
+FROM debian:11.8
+
+WORKDIR /
+
+# Install dependencies for PhantomJS
+RUN apt-get update && \
+    apt-get install -y \
+        build-essential \
+        chrpath \
+        libssl-dev \
+        libxft-dev \
+        libfreetype6 \
+        libfreetype6-dev \
+        libfontconfig1 \
+        libfontconfig1-dev
+
+# Copy PhantomJS from local filesystem
+COPY --chmod=0755 ./phantomjs /usr/local/bin
+
+# Clean up
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+FROM node:12.22
+MAINTAINER massimo@it20.info
+
+WORKDIR /
+
+# Copy PhantomJS into Stage 1 (needed for npm install)
+COPY --from=0 /usr/local/bin/phantomjs /usr/local/bin/phantomjs
+RUN npm install -g @angular/cli@6.0.0
+
+RUN npm install node-sass@4.13.1
+
+ADD clarity-seed-newfiles clarity-seed-newfiles 
+
+RUN git clone https://github.com/vmware/clarity-seed.git
+WORKDIR /clarity-seed
+RUN git checkout -b f3250ee26ceb847f61bb167a90dc957edf6e7f43
+
+RUN cp /clarity-seed-newfiles/src/index.html /clarity-seed/src/index.html
+RUN cp /clarity-seed-newfiles/src/styles.css /clarity-seed/src/styles.css
+RUN cp /clarity-seed-newfiles/src/env.js /clarity-seed/src/env.js
+RUN cp /clarity-seed-newfiles/src/app/app* /clarity-seed/src/app
+RUN cp /clarity-seed-newfiles/src/app/env* /clarity-seed/src/app
+RUN cp /clarity-seed-newfiles/src/environments/env* /clarity-seed/src/environments
+RUN cp /clarity-seed-newfiles/package.json /clarity-seed/package.json
+RUN cp /clarity-seed-newfiles/angular-cli.json /clarity-seed/.angular-cli.json
+RUN rm -r /clarity-seed/src/app/home
+RUN rm -r /clarity-seed/src/app/about
+
+WORKDIR /clarity-seed/src
+
+RUN npm install  
+
+RUN ng build --environment=prod --output-path=./prod/dist/ -aot -vc -cc -dop --buildOptimizer
+RUN ng build --environment=test --output-path=./test/dist/
+RUN ng build --environment=dev --output-path=./dev/dist/
+
+
+FROM nginx:1.17.10
+MAINTAINER massimo@it20.info
+
+WORKDIR /
+ADD startup.sh startup.sh
+
+ENV UI_ENV=prod 
+
+RUN chmod +x startup.sh
+
+COPY --from=1 /clarity-seed/src/prod/dist /clarity-seed/prod/dist
+COPY --from=1 /clarity-seed/src/test/dist /clarity-seed/test/dist
+COPY --from=1 /clarity-seed/src/dev/dist /clarity-seed/dev/dist
+ 
+CMD ["./startup.sh"]
+

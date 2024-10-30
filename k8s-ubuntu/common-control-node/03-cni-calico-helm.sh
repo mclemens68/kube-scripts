@@ -4,4 +4,4 @@ kubectl create ns tigera-operator
 #kubectl label --overwrite ns tigera-operator pod-security.kubernetes.io/enforce=privileged
 
 #helm repo add projectcalico https://docs.tigera.io/calico/charts
-helm install calico projectcalico/tigera-operator --version v3.26.3 --namespace tigera-operator
+helm install calico projectcalico/tigera-operator --version v3.28.2 --namespace tigera-operator

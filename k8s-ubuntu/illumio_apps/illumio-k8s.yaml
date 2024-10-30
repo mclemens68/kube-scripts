@@ -1,0 +1,37 @@
+# Copy this file to illumio-k8s.yaml and update the below info
+# pce_url in the format of fqdn:port
+pce_url: pce.clemenslabs.com:8443 
+# cluster_id and cluster_token are copied from the pce when the container cluster is created
+cluster_id: 3f5eea46-eb8c-4f32-b375-95999bed8de4
+cluster_token: 1_355a5ec2554a30a9ce970a29ce3d679d9777d577dc96b5f3b517e4586bef680f
+# cluster_code is the pairing key from the pce for your kubernetes nodes
+cluster_code: 13da626770ae8e516d6beb3fa5fdc5265a19cb18b98137abba63b4a23cbeab2c1e4015bb3f314e0a8
+containerRuntime: containerd
+containerManager: kubernetes
+ignore_cert: false
+# change to clas if installing in CLAS mode
+clusterMode: clas
+# Override some defaults so it will run on limited CPU devices
+cven:
+  resources:
+    limits:
+      memory: 300Mi
+    requests:
+      cpu: 250m
+      memory: 100Mi
+
+kubelink:
+  resources:
+    limits:
+      memory: 500Mi
+    requests:
+      cpu: 200m
+      memory: 200Mi
+
+storage:
+  resources:
+    limits:
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 200Mi
