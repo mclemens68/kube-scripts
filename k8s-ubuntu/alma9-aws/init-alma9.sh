@@ -71,3 +71,20 @@ chmod 700 get_helm.sh
 ./get_helm.sh
 rm -f get_helm.sh
 
+#Add Google server to DNS
+
+# Find the UUID of the eth0 connection
+CONNECTION_UUID=$(nmcli -t -f UUID,DEVICE connection show | grep "eth0" | cut -d: -f1)
+
+# Check if the UUID was found
+if [ -n "$CONNECTION_UUID" ]; then
+    # Add the DNS server to the connection
+    nmcli connection modify "$CONNECTION_UUID" ipv4.dns "8.8.8.8"
+
+    # Restart NetworkManager to apply the changes
+    systemctl restart NetworkManager
+else
+    echo "Error: No active connection found for eth0."
+    exit 1
+fi
+

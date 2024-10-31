@@ -6,7 +6,7 @@ networking:
   podSubnet: 10.244.0.0/16
   dnsDomain: cluster.local
 kubernetesVersion: v1.29.0
-controlPlaneEndpoint: 192.168.40.18
+controlPlaneEndpoint: k8s-mstr-a-priv.clemenslabs.com
 ---
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
