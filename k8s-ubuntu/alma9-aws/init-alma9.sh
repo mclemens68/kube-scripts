@@ -66,6 +66,8 @@ EOF
 sudo dnf -y install kubelet kubeadm kubectl --disableexcludes=kubernetes
 sudo systemctl enable --now kubelet
 
+mkdir ~/.kube
+
 # Install etcd-client
 sudo dnf -y install etcd
 
