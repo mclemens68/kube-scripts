@@ -2,8 +2,8 @@
 # pce_url in the format of fqdn:port
 pce_url: pce.clemenslabs.com:8443 
 # cluster_id and cluster_token are copied from the pce when the container cluster is created
-cluster_id: 248f2b2f-7f85-454b-a6e9-1207e1f324e6
-cluster_token: 1_d2792feef940337402eb0931de573a9977db8b956b13db8a88fba93130d93f18
+cluster_id: 4a333513-efcd-48f3-bae0-b17342da50ec
+cluster_token: 1_3a23d4ca54fd6be36cb400a099340a4cd974b526f5e8cf9e9c18872838db9daa
 # cluster_code is the pairing key from the pce for your kubernetes nodes
 cluster_code: 13da626770ae8e516d6beb3fa5fdc5265a19cb18b98137abba63b4a23cbeab2c1e4015bb3f314e0a8
 containerRuntime: containerd
