@@ -1,0 +1,52 @@
+# Label mapping CRD (will overwrite pairing profile labels)
+kind: LabelMap
+apiVersion: ic4k.illumio.com/v1alpha1
+metadata:
+  name: default
+
+nodeLabelMap:
+  - allowCreate: true
+    fromKey: topology.kubernetes.io/region
+    toKey: loc
+    valuesMap:
+      - from: eastus
+        to: azure
+      - from: centralus
+        to: azure
+#- allowCreate: true
+#  fromKey: node-type
+#  toKey: k8s-node
+
+workloadLabelMap:
+  - fromKey: topology.kubernetes.io/region
+    toKey: loc
+    allowCreate: true
+    valuesMap:
+      - from: eastus
+        to: azure
+      - from: centralus
+        to: azure
+  - fromKey: app
+    toKey: app
+    allowCreate: true
+    valuesMap:
+      - from: redis
+        to: guestbook
+      - from: guestbook
+        to: guestbook
+      - from: yelb-ui
+        to: yelb
+      - from: yelb-appserver
+        to: yelb
+      - from: yelb-db
+        to: yelb
+      - from: redis-server
+        to: yelb
+      - from: illumio-kubelink
+        to: illumio-system
+      - from: illumio-storage
+        to: illumio-system
+
+  #- fromKey: stage
+  #  toKey: role
+  #  allowCreate: true

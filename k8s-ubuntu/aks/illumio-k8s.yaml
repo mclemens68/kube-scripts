@@ -2,8 +2,8 @@
 # pce_url in the format of fqdn:port
 pce_url: pce.clemenslabs.com:8443 
 # cluster_id and cluster_token are copied from the pce when the container cluster is created
-cluster_id: 11a87f66-6c33-46f7-a9de-7f768f0f674a
-cluster_token: 1_936ccf7496e2348f8ccc81d8d7fa02d4c8f617b632e7b666191c2f27370b7ae6
+cluster_id: 065956e8-8a3c-49dd-bc2c-c27afea34663
+cluster_token: 1_fbe5580a3167aa436b88844ab3c5a1e2ded36fe48b3ddef5b679d3b345915f0b
 # cluster_code is the pairing key from the pce for your kubernetes nodes
 cluster_code: 13da626770ae8e516d6beb3fa5fdc5265a19cb18b98137abba63b4a23cbeab2c1e4015bb3f314e0a8
 containerRuntime: containerd
@@ -11,6 +11,59 @@ containerManager: kubernetes
 ignore_cert: false
 # change to clas if installing in CLAS mode
 clusterMode: clas
+
+# Label mapping CRD (will overwrite pairing profile labels)
+kind: LabelMap
+apiVersion: ic4k.illumio.com/v1alpha1
+metadata:
+  name: default
+
+nodeLabelMap:
+  - allowCreate: true
+    fromKey: topology.kubernetes.io/region
+    toKey: loc
+    valuesMap:
+      - from: eastus
+        to: azure
+      - from: centralus
+        to: azure
+#- allowCreate: true
+#  fromKey: node-type
+#  toKey: k8s-node
+
+workloadLabelMap:
+  - fromKey: topology.kubernetes.io/region
+    toKey: loc
+    valuesMap:
+      - from: eastus
+        to: azure
+      - from: centralus
+        to: azure
+  - fromKey: app
+    toKey: app
+    allowCreate: false
+    valuesMap:
+      - from: redis
+        to: guestbook
+      - from: guestbook
+        to: guestbook
+      - from: yelb-ui
+        to: yelb
+      - from: yelb-appserver
+        to: yelb
+      - from: yelb-db
+        to: yelb
+      - from: redis-server
+        to: yelb
+      - from: illumio-kubelink
+        to: illumio-system
+      - from: illumio-storage
+        to: illumio-system
+
+  #- fromKey: stage
+  #  toKey: role
+  #  allowCreate: true
+
 # Override some defaults so it will run on limited CPU devices
 cven:
   resources:
