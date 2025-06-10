@@ -32,8 +32,6 @@ workloadLabelMap:
     valuesMap:
       - from: redis
         to: guestbook
-      - from: guestbook
-        to: guestbook
       - from: yelb-ui
         to: yelb
       - from: yelb-appserver

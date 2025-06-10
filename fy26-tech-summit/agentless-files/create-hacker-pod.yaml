@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-http
+  namespace: external
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: compromised
+  template:
+    metadata:
+      labels:
+        app: compromised
+    spec:
+      containers:
+      - name: attacker
+        image: alpine
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            apk add --no-cache netcat-openbsd coreutils && \
+            while true; do
+              echo "[attacker] Trying to connect to 10.0.2.7:22"
+              timeout 5 nc -zv 10.0.2.7 22 || true
+              sleep 60
+            done
+

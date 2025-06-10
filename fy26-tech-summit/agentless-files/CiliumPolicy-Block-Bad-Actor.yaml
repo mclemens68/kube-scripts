@@ -1,0 +1,23 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: deny-ssh-from-compromised
+  namespace: default
+spec:
+  endpointSelector:
+    matchLabels:
+      app: transactionhistory
+  ingressDeny:
+  - fromEndpoints:
+      - matchExpressions:
+          - key: app
+            operator: In
+            values: ["compromised"]
+          - key: io.kubernetes.pod.namespace
+            operator: In
+            values: ["external"]
+    toPorts:
+    - ports:
+        - port: "22"
+          protocol: TCP
+
