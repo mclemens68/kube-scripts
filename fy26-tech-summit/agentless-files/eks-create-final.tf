@@ -171,7 +171,7 @@ resource "aws_eks_node_group" "eks_nodes" {
     "illumio.com/role"       = "worker-node"
     "illumio.com/owner"      = "TPM"
     "illumio.com/namespace"  = "default"
-    "illumio.com/region"     = "us-east-2"
+    "illumio.com/region"     = "us-east-1"
   }
 
   tags = {
