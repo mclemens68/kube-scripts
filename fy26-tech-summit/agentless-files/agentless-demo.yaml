@@ -1,3 +1,71 @@
+# CiliumNetworkPolicy: Block Bad Actor
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: block-bad-actor
+  namespace: default
+spec:
+  endpointSelector:
+    matchLabels:
+      app: Bad-Actor
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: frontend
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: frontend
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+---
+# Namespace for Bad Actor
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: public
+---
+# Deployment for Bad Actor
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bad-actor
+  namespace: public
+  labels:
+    app: Bad-Actor
+    role: attacker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: Bad-Actor
+  template:
+    metadata:
+      labels:
+        app: Bad-Actor
+        role: attacker
+    spec:
+      containers:
+        - name: bad-actor
+          image: alpine
+          command:
+            - "sh"
+            - "-c"
+            - |
+              apk add --no-cache netcat-openbsd coreutils >/dev/null 2>&1 && \
+              while true; do
+                timeout 5 nc -zv transactionhistory.default.svc.cluster.local 8080 >/dev/null 2>&1 || true
+                sleep 120
+              done
+---
+# MEGASHOP SETUP
+---
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -28,6 +96,7 @@ kind: Namespace
 metadata:
   name: megashop-ops
 ---
+# web-ui Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -52,8 +121,8 @@ spec:
       - name: web-ui
         image: busybox
         command: ["sh", "-c", "while true; do wget -qO- http://api.megashop-api.svc.cluster.local; sleep 4; done"]
-
 ---
+# api-service Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -78,8 +147,22 @@ spec:
       - name: api-service
         image: busybox
         command: ["sh", "-c", "while true; do wget -qO- http://backend.megashop-backend.svc.cluster.local; wget -qO- http://auth.megashop-auth.svc.cluster.local; sleep 5; done"]
-
 ---
+# api-service Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: megashop-api
+spec:
+  selector:
+    app: MegaShop
+    tier: api
+  ports:
+    - port: 80
+      targetPort: 80
+---
+# backend Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -104,8 +187,22 @@ spec:
       - name: backend
         image: busybox
         command: ["sh", "-c", "while true; do wget -qO- http://db.megashop-db.svc.cluster.local; wget -qO- http://logger.megashop-ops.svc.cluster.local; sleep 5; done"]
-
 ---
+# backend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: megashop-backend
+spec:
+  selector:
+    app: MegaShop
+    tier: backend
+  ports:
+    - port: 80
+      targetPort: 80
+---
+# auth Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -130,8 +227,22 @@ spec:
       - name: auth
         image: busybox
         command: ["sh", "-c", "while true; do nc -lk -p 80 -e echo AuthOK; done"]
-
 ---
+# auth Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth
+  namespace: megashop-auth
+spec:
+  selector:
+    app: MegaShop
+    tier: auth
+  ports:
+    - port: 80
+      targetPort: 80
+---
+# db Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -156,8 +267,22 @@ spec:
       - name: db
         image: busybox
         command: ["sh", "-c", "while true; do nc -lk -p 80 -e echo DBOK; done"]
-
 ---
+# db Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: megashop-db
+spec:
+  selector:
+    app: MegaShop
+    tier: db
+  ports:
+    - port: 80
+      targetPort: 80
+---
+# logger Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -182,4 +307,40 @@ spec:
       - name: logger
         image: busybox
         command: ["sh", "-c", "while true; do nc -lk -p 80 -e echo Logged; done"]
+---
+# logger Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: logger
+  namespace: megashop-ops
+spec:
+  selector:
+    app: MegaShop
+    tier: logger
+  ports:
+    - port: 80
+      targetPort: 80
 
+---
+# external-collector Pod (silent external data polling)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: external-collector
+  namespace: megashop-backend
+  labels:
+    app: MegaShop
+    role: external-client
+spec:
+  containers:
+  - name: curl
+    image: curlimages/curl
+    command:
+      - sh
+      - -c
+      - |
+        while true; do
+          curl -s -o /dev/null http://172.31.199.86 || true
+          sleep 30
+        done
