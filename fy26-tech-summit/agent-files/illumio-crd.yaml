@@ -1,0 +1,43 @@
+# Label mapping CRD (will overwrite pairing profile labels)
+kind: LabelMap
+apiVersion: ic4k.illumio.com/v1alpha1
+metadata:
+  name: default
+
+nodeLabelMap:
+  - allowCreate: true
+    fromKey: topology.kubernetes.io/region
+    toKey: loc
+    valuesMap:
+      - from: eastus
+        to: azure
+      - from: centralus
+        to: azure
+
+workloadLabelMap:
+  - fromKey: app
+    toKey: app
+    allowCreate: true
+    valuesMap:
+      - from: yelb-ui
+        to: yelb
+      - from: yelb-appserver
+        to: yelb
+      - from: yelb-db
+        to: yelb
+      - from: redis-server
+        to: yelb
+  - fromKey: tier
+    toKey: role
+    allowCreate: true
+    valuesMap:
+      - from: redis
+        to: db
+      - from: cache
+        to: db
+      - from: backenddb
+        to: db
+      - from: frontend
+        to: web
+      - from: middletier
+        to: app 
