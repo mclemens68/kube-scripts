@@ -10,9 +10,9 @@ nodeLabelMap:
     toKey: loc
     valuesMap:
       - from: eastus
-        to: azure
+        to: AKS
       - from: centralus
-        to: azure
+        to: AKS
 
 workloadLabelMap:
   - fromKey: app
