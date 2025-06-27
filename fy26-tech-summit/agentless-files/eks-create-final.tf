@@ -2,6 +2,12 @@ variable "cluster_name" {
   default = "TPM-Beta-Demo"
 }
 
+variable "vpc_flow_logs_s3_arn" {
+  description = "S3 ARN for VPC Flow Logs. If provided, VPC Flow Logs will be enabled"
+  type        = string
+  default     = ""
+}
+
 provider "aws" {
   region = "us-east-1" # Change as needed
 }
@@ -207,5 +213,18 @@ resource "aws_iam_role_policy_attachment" "worker_cni_policy" {
 resource "aws_iam_role_policy_attachment" "worker_ec2_policy" {
   role       = aws_iam_role.worker_nodes.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+# --- VPC Flow Logs (Optional) ---
+resource "aws_flow_log" "vpc_flow_log" {
+  count                = var.vpc_flow_logs_s3_arn != "" ? 1 : 0
+  log_destination      = var.vpc_flow_logs_s3_arn
+  log_destination_type = "s3"
+  traffic_type         = "ALL"
+  vpc_id               = aws_vpc.eks_vpc.id
+
+  tags = {
+    Name = "${var.cluster_name}-vpc-flow-logs"
+  }
 }
 
