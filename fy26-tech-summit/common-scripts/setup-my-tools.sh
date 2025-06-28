@@ -9,7 +9,7 @@ cd "$TMP_DIR"
 # --- kubectl ---
 if ! command -v kubectl &> /dev/null; then
   echo "📦 Installing kubectl..."
-  KUBECTL_VERSION=$(curl -s https://dl.k8s.io/release/stable.txt)
+  KUBECTL_VERSION=$(curl -Ls https://dl.k8s.io/release/stable.txt)
   curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
   chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 fi
@@ -18,7 +18,7 @@ echo "✅ kubectl: $(kubectl version --client --output=yaml | grep gitVersion ||
 # --- Helm ---
 if ! command -v helm &> /dev/null; then
   echo "🎛️ Installing Helm..."
-  HELM_VERSION=$(curl -s https://api.github.com/repos/helm/helm/releases/latest | jq -r .tag_name)
+  HELM_VERSION=$(curl -Ls https://api.github.com/repos/helm/helm/releases/latest | jq -r .tag_name)
   curl -LO https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz
   tar -zxf helm-${HELM_VERSION}-linux-amd64.tar.gz
   sudo mv linux-amd64/helm /usr/local/bin/
@@ -46,7 +46,7 @@ echo "✅ hubble: $(hubble version || echo installed)"
 # --- Terraform ---
 if ! command -v terraform &> /dev/null; then
   echo "🏗️ Installing Terraform..."
-  TF_VERSION=$(curl -s https://api.github.com/repos/hashicorp/terraform/releases/latest | jq -r .tag_name | sed 's/^v//')
+  TF_VERSION=$(curl -Ls https://api.github.com/repos/hashicorp/terraform/releases/latest | jq -r .tag_name | sed 's/^v//')
   curl -LO https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
   unzip -o terraform_${TF_VERSION}_linux_amd64.zip
   sudo mv terraform /usr/local/bin/
