@@ -4,5 +4,6 @@
 *.DS_store
 *.bak
 *.zip
-workloader.log
+workloader*
+cwp*
 *illumio-cloud-operator*
