@@ -10,6 +10,7 @@ variable "vpc_flow_logs_s3_arn" {
 
 provider "aws" {
   region = "us-east-1" # Change as needed
+  profile = "default" # Change as needed
 }
 
 # --- VPC ---
