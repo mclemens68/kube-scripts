@@ -2,6 +2,7 @@
 alias kube-nodes='kubectl get nodes -o wide'
 alias kube-pods='kubectl get pods --all-namespaces -o wide'
 alias kube-svc='kubectl get svc --all-namespaces -o wide'
+alias kube-dep='kubectl get deployments --all-namespaces -o wide'
 
 # List all contexts
 alias kube-ctx-list='kubectl config get-contexts'
