@@ -2,7 +2,15 @@
 
 # Check if a filename argument was passed
 if [ -z "$1" ]; then
-  echo "Usage: $0 <illumio-cloud-operator-onboarding-credentials.yaml>"
+  echo "Usage: $0 <illumio-cloud-operator-onboarding-credentials.yaml> <version>"
+  echo "Example: $0 illumio-cloud-operator-values.yaml v1.3.7"
+  exit 1
+fi
+
+# Check if version argument was passed
+if [ -z "$2" ]; then
+  echo "Usage: $0 <illumio-cloud-operator-onboarding-credentials.yaml> <version>"
+  echo "Example: $0 illumio-cloud-operator-values.yaml v1.3.7"
   exit 1
 fi
 
@@ -13,4 +21,4 @@ if [ ! -f "$1" ]; then
 fi
 
 # Run the helm install command
-helm install illumio -f "$1" --namespace illumio-cloud oci://ghcr.io/illumio/charts/cloud-operator --version v1.1.5 --create-namespace
+helm install illumio -f "$1" --namespace illumio-cloud oci://ghcr.io/illumio/charts/cloud-operator --version "$2" --create-namespace
