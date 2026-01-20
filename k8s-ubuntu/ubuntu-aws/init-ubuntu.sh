@@ -1,3 +1,4 @@
+# This script has been tested on 22.04 and 24.04
 sudo apt update
 sudo apt -y upgrade
 sudo apt -y install vim git netcat chrony
@@ -16,6 +17,15 @@ sudo apt -y autoremove
 sudo rm /var/swap
 sudo sync
 
+# Disable IPv6 for Illumio C-VEN (prevents IPv6 bypass paths)
+cat <<EOF | sudo tee /etc/sysctl.d/99-disable-ipv6.conf
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+EOF
+
+sudo sysctl --system
+
 # set kernel parameters before installing containerd
 
 cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
@@ -30,6 +40,12 @@ cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-k8s.conf
 net.bridge.bridge-nf-call-iptables = 1
 net.ipv4.ip_forward = 1
 net.bridge.bridge-nf-call-ip6tables = 1
+# WARNING: The settings below are for Cilium CNI and may conflict with Illumio C-VEN
+# Uncomment only if Cilium will be deployed AND Illumio compatibility has been verified
+# net.ipv4.conf.all.rp_filter = 0
+# net.ipv4.conf.default.rp_filter = 0
+# fs.inotify.max_user_watches = 524288
+# fs.inotify.max_queued_events = 5242880
 EOF
 
 sudo sysctl --system
@@ -38,7 +54,7 @@ sudo sysctl --system
 
 for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
 sudo apt update
-sudo apt-get -y install ca-certificates curl gnupg
+sudo apt-get -y install ca-certificates curl gnupg linux-headers-generic linux-image-generic
 sudo install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
@@ -58,7 +74,7 @@ sudo systemctl restart containerd
 sudo systemctl enable containerd
 
 # Make sure we're using legacy iptables
-sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
+sudo update-alternatives --set iptables /usr/sbin/iptables-legacy || true
 
 # Install Kubernetes (v1.34)
 sudo apt-get install -y apt-transport-https ca-certificates curl
