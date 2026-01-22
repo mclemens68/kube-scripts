@@ -1,7 +1,7 @@
 # This script has been tested on 22.04 and 24.04
 sudo apt update
 sudo apt -y upgrade
-sudo apt -y install vim git netcat chrony
+sudo apt -y install vim git netcat-openbsd chrony
 
 # Install Illumio VEN required packages
 sudo apt -y install curl dnsutils sed ipset libcap2 libgmp10 libmnl0 libnfnetlink0 net-tools uuid-runtime
@@ -12,9 +12,9 @@ sudo timedatectl set-timezone America/Chicago
 #Disable swap permanently
 sudo sync
 sudo swapoff -a
-sudo apt purge -y dphys-swapfile
+sudo apt -o Dpkg::Lock::Timeout=120 purge -y dphys-swapfile
 sudo apt -y autoremove
-sudo rm /var/swap
+sudo rm -f /var/swap
 sudo sync
 
 # Disable IPv6 for Illumio C-VEN (prevents IPv6 bypass paths)
@@ -54,7 +54,7 @@ sudo sysctl --system
 
 for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
 sudo apt update
-sudo apt-get -y install ca-certificates curl gnupg linux-headers-generic linux-image-generic
+sudo apt-get -y install ca-certificates curl gnupg
 sudo install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
@@ -62,7 +62,6 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
 sudo apt update
 sudo apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 sudo docker run hello-world
-
 
 # Post install containerd config
 
@@ -87,7 +86,7 @@ sudo apt install kubelet kubeadm kubectl -y
 sudo apt-mark hold kubelet kubeadm kubectl
 sudo apt install etcd-client
 
-mkdir ~/.kube
+mkdir -p ~/.kube
 
 #Install helm
 curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
