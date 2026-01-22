@@ -1,3 +1,10 @@
+# Ensure cluster prefix is provided
+if [ -z "$1" ]; then
+  echo "Usage: $0 <cluster-prefix>"
+  exit 1
+fi
+CLUSTER_PREFIX="$1"
+
 # Clean all docker containers and images
 sudo docker system prune -af
 # Reset kubernetes cluster
@@ -10,9 +17,9 @@ sudo iptables -t mangle -F
 sudo iptables -X
 sudo nft flush ruleset
 # Reset and reboot nodes
-ssh -t ubuntu@k8s-wk1-priv.clemenslabs.com '/home/ubuntu/reset.sh'
-ssh -t ubuntu@k8s-wk2-priv.clemenslabs.com '/home/ubuntu/reset.sh'
-ssh -t ubuntu@k8s-wk1-priv.clemenslabs.com 'sudo reboot'
-ssh -t ubuntu@k8s-wk2-priv.clemenslabs.com 'sudo reboot'
+ssh -t ubuntu@${CLUSTER_PREFIX}-wk1-priv.clemenslabs.com '/home/ubuntu/reset.sh'
+ssh -t ubuntu@${CLUSTER_PREFIX}-wk2-priv.clemenslabs.com '/home/ubuntu/reset.sh'
+ssh -t ubuntu@${CLUSTER_PREFIX}-wk1-priv.clemenslabs.com 'sudo reboot'
+ssh -t ubuntu@${CLUSTER_PREFIX}-wk2-priv.clemenslabs.com 'sudo reboot'
 # Reboot control node
 sudo reboot
