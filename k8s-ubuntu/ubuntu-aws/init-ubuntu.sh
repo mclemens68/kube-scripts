@@ -39,13 +39,13 @@ sudo modprobe br_netfilter
 cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-k8s.conf
 net.bridge.bridge-nf-call-iptables = 1
 net.ipv4.ip_forward = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-# WARNING: The settings below are for Cilium CNI and may conflict with Illumio C-VEN
-# Uncomment only if Cilium will be deployed AND Illumio compatibility has been verified
+# IPv6 is disabled earlier in the script; ensure bridge-nf-call-ip6tables is disabled to avoid no-op/warnings
+net.bridge.bridge-nf-call-ip6tables = 0
+# WARNING: The settings below are for Cilium CNI
+# Uncomment only if Cilium will be deployed with Kube Proxy replacement enabled, which
+# is not compatible with Illumio C-VEN
 # net.ipv4.conf.all.rp_filter = 0
 # net.ipv4.conf.default.rp_filter = 0
-# fs.inotify.max_user_watches = 524288
-# fs.inotify.max_queued_events = 5242880
 EOF
 
 sudo sysctl --system
