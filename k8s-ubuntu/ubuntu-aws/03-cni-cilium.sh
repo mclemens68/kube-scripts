@@ -9,5 +9,10 @@ kubectl label --overwrite ns cilium pod-security.kubernetes.io/enforce=privilege
 helm repo add cilium https://helm.cilium.io/
 helm repo update
 
-# install Cilium (adjust --set values as needed for your cluster, e.g. IPAM mode or pod CIDR)
-helm install cilium cilium/cilium --namespace cilium --wait
+# install Cilium with explicit pod CIDR
+helm install cilium cilium/cilium \
+  --namespace cilium \
+  --wait \
+  --set ipam.mode=cluster-pool \
+  --set ipam.operator.clusterPoolIPv4PodCIDR=10.246.0.0/16 \
+  --set ipam.operator.clusterPoolIPv4MaskSize=24

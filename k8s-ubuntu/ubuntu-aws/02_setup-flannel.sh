@@ -7,9 +7,11 @@ export CLUSTER_PREFIX="$1"
 
 # Render kubeadm config with the provided cluster prefix and initialize
 envsubst < ./kubeadm-config.yaml > /tmp/kubeadm-config.yaml
-kubeadm init --config /tmp/kubeadm-config.yaml
+sudo kubeadm init \
+  --config /tmp/kubeadm-config.yaml \
+  --service-cidr=10.97.0.0/16 \
+  --pod-network-cidr=10.245.0.0/16
 
-#sudo kubeadm init --pod-network-cidr=10.244.0.0/16
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 

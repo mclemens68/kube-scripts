@@ -5,8 +5,11 @@ if [ -z "$1" ]; then
 fi
 CLUSTER_PREFIX="$1"
 
-./02_setup.sh "$CLUSTER_PREFIX"
-./03-cni-flannel-helm.sh
+./02_setup-cilium.sh "$CLUSTER_PREFIX"
+./03-cni-cilium.sh
 ./04-join.sh "$CLUSTER_PREFIX"
-./05-label-nodes.sh "$CLUSTER_PREFIX"
+./05-set-provider-ids.sh
+./06-label-nodes.sh "$CLUSTER_PREFIX"
+./07-install-aws-loadbalancer.sh
+./08-create-default-storage-class.sh
 scp /home/ubuntu/.kube/config ${CLUSTER_PREFIX}-client-priv.clemenslabs.com:/home/ubuntu/.kube/config
