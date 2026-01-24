@@ -18,10 +18,11 @@ rm -rf "${HOME}/.kube/"* || true
 sudo rm -rf /root/.kube/* || true
 
 # Flush firewall rules (scorched-earth; keep if this is a dedicated lab node)
-sudo iptables -F || true
-sudo iptables -t nat -F || true
-sudo iptables -t mangle -F || true
-sudo iptables -X || true
+# Use -w to wait for the xtables lock instead of failing.
+sudo iptables -w 5 -F || true
+sudo iptables -w 5 -t nat -F || true
+sudo iptables -w 5 -t mangle -F || true
+sudo iptables -w 5 -X || true
 sudo nft flush ruleset || true
 
 # Remove any leftover CRI objects in containerd

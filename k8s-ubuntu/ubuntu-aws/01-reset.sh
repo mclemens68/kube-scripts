@@ -28,10 +28,11 @@ rm -rf "${HOME}/.kube/"* || true
 sudo rm -rf /root/.kube/* || true
 
 # Flush firewall rules (scorched-earth; keep if this is a dedicated lab node)
-sudo iptables -F || true
-sudo iptables -t nat -F || true
-sudo iptables -t mangle -F || true
-sudo iptables -X || true
+# Use -w to wait for the xtables lock instead of failing.
+sudo iptables -w 5 -F || true
+sudo iptables -w 5 -t nat -F || true
+sudo iptables -w 5 -t mangle -F || true
+sudo iptables -w 5 -X || true
 sudo nft flush ruleset || true
 
 # Remove any leftover CRI objects in containerd (e.g., exited CoreDNS pods)
@@ -51,9 +52,11 @@ echo "=== Resetting worker nodes: ${WK1}, ${WK2} ==="
 ssh -t "${WK1}" '/home/ubuntu/reset.sh'
 ssh -t "${WK2}" '/home/ubuntu/reset.sh'
 
-# Reboot workers
-ssh -t "${WK1}" 'sudo reboot'
-ssh -t "${WK2}" 'sudo reboot'
+# Reboot workers:
+# A reboot usually drops the SSH session and returns a non-zero exit code (which would
+# abort the script due to `set -e`). Run reboot detached and ignore SSH disconnect errors.
+ssh "${WK1}" 'sudo nohup shutdown -r now >/dev/null 2>&1 &' || true
+ssh "${WK2}" 'sudo nohup shutdown -r now >/dev/null 2>&1 &' || true
 
 echo "=== Rebooting control-plane node ==="
 sudo reboot
