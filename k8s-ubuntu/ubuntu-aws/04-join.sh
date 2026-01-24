@@ -1,13 +1,18 @@
-#!/bin/bash
-# Ensure cluster prefix is provided
-if [ -z "$1" ]; then
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -z "${1:-}" ]]; then
   echo "Usage: $0 <cluster-prefix>"
   exit 1
 fi
+
 CLUSTER_PREFIX="$1"
 
-kubeadm token create --print-join-command > join_cmd.txt
-join_cmd=$(<join_cmd.txt)
+join_cmd="$(sudo kubeadm token create --print-join-command)"
+join_cmd="${join_cmd} --cri-socket=unix:///run/containerd/containerd.sock"
 
-ssh -t ubuntu@${CLUSTER_PREFIX}-wk1-priv.clemenslabs.com 'sudo '$join_cmd
-ssh -t ubuntu@${CLUSTER_PREFIX}-wk2-priv.clemenslabs.com 'sudo '$join_cmd
+for node in wk1 wk2; do
+  host="ubuntu@${CLUSTER_PREFIX}-${node}-priv.clemenslabs.com"
+  echo "Joining ${host}..."
+  ssh -t "$host" "sudo ${join_cmd}"
+done
