@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
 # Ensure cluster prefix is provided
 if [ -z "$1" ]; then
   echo "Usage: $0 <cluster-prefix>"
@@ -12,5 +15,5 @@ CLUSTER_PREFIX="$1"
 ./06-label-nodes.sh "$CLUSTER_PREFIX"
 ./07-install-aws-loadbalancer.sh
 ./08-create-default-storage-class.sh
-./09-disable-kube-proxy.sh
+ENABLE_HUBBLE_PORTFW=1 ./09-finalize-cilium-dataplane.sh
 scp /home/ubuntu/.kube/config ${CLUSTER_PREFIX}-client-priv.clemenslabs.com:/home/ubuntu/.kube/config

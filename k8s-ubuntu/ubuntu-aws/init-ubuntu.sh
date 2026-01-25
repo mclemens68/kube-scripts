@@ -143,8 +143,11 @@ sudo apt -y install containerd
 
 # Post-install containerd config (systemd cgroups)
 sudo mkdir -p /etc/containerd
-containerd config default | sudo tee /etc/containerd/config.toml >/dev/null
-sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+sudo containerd config default | sudo tee /etc/containerd/config.toml >/dev/null
+
+# Tighten the SystemdCgroup flip (avoids accidental multiple replacements)
+sudo sed -i 's/^\(\s*SystemdCgroup\s*=\s*\)false$/\1true/' /etc/containerd/config.toml
+
 sudo systemctl restart containerd
 sudo systemctl enable containerd
 
@@ -171,6 +174,33 @@ sudo apt -y install kubelet kubeadm kubectl etcd-client
 sudo apt-mark hold kubelet kubeadm kubectl
 
 mkdir -p ~/.kube
+
+# --- Align containerd pause image with kubeadm (removes kubeadm warning) ---
+# kubeadm prints a warning if containerd's sandbox_image (pause) doesn't match what kubeadm expects.
+PAUSE_IMG="$(kubeadm config images list 2>/dev/null | grep -E '^registry\.k8s\.io/pause:' | head -n1 || true)"
+if [[ -n "${PAUSE_IMG}" ]]; then
+  echo "Aligning containerd sandbox_image to kubeadm pause image: ${PAUSE_IMG}"
+  if sudo grep -qE '^\s*sandbox_image\s*=' /etc/containerd/config.toml; then
+    sudo sed -i "s|^\(\s*sandbox_image\s*=\s*\)\".*\"|\1\"${PAUSE_IMG}\"|" /etc/containerd/config.toml
+  else
+    # Rare fallback: inject under CRI plugin header
+    sudo awk -v img="${PAUSE_IMG}" '
+      {print}
+      $0 ~ /^\[plugins\."io\.containerd\.grpc\.v1\.cri"\]/ {
+        print "  sandbox_image = \"" img "\""
+      }' /etc/containerd/config.toml | sudo tee /etc/containerd/config.toml >/dev/null
+  fi
+
+  # Optional pre-pull to avoid first-use latency
+  sudo ctr -n k8s.io images pull "${PAUSE_IMG}" >/dev/null 2>&1 || true
+
+  # Restart so CRI picks up the new sandbox image
+  sudo systemctl restart containerd
+  sudo systemctl restart kubelet || true
+else
+  echo "ℹ️  Could not determine kubeadm pause image; leaving containerd sandbox_image as-is."
+fi
+# ------------------------------------------------------------------------
 
 # Install Helm
 curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash

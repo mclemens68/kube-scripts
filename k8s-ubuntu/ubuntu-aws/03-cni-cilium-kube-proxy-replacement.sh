@@ -19,7 +19,7 @@ helm repo update >/dev/null
 # install/upgrade Cilium + enable Hubble (observability): relay + UI + metrics
 helm upgrade --install cilium cilium/cilium \
   --namespace cilium --create-namespace --wait \
-  --set kubeProxyReplacement=strict \
+  --set kubeProxyReplacement=true \
   --set k8sServiceHost="${CLUSTER_PREFIX}-mstr-priv.clemenslabs.com" \
   --set k8sServicePort=6443 \
   --set ipam.mode=cluster-pool \
@@ -31,23 +31,3 @@ helm upgrade --install cilium cilium/cilium \
   --set hubble.relay.replicas=1 \
   --set hubble.metrics.enabled="{dns,drop,tcp,flow}"
 
-# Wait for Hubble components to become ready (best effort)
-kubectl -n cilium rollout status deployment/hubble-relay --timeout=180s || true
-kubectl -n cilium rollout status deployment/hubble-ui --timeout=180s || true
-
-# Sanity check services exist before port-forwarding
-if ! kubectl -n cilium get svc hubble-ui >/dev/null 2>&1; then
-  echo "⚠️  Service cilium/hubble-ui not found. Skipping UI port-forward."
-else
-  echo "🚪 Port-forwarding Hubble UI to localhost:12000..."
-  kubectl -n cilium port-forward svc/hubble-ui 12000:80 >/dev/null 2>&1 &
-  echo "✅ You can now access the Hubble UI at http://localhost:12000"
-fi
-
-if ! kubectl -n cilium get svc hubble-relay >/dev/null 2>&1; then
-  echo "⚠️  Service cilium/hubble-relay not found. Skipping relay port-forward."
-else
-  echo "🚪 Port-forwarding Hubble Relay to localhost:4245..."
-  kubectl -n cilium port-forward svc/hubble-relay 4245:80 >/dev/null 2>&1 &
-  echo "✅ You can now run: hubble observe --server localhost:4245"
-fi

@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
 # Ensure cluster prefix is provided
 if [ -z "$1" ]; then
   echo "Usage: $0 <cluster-prefix>"

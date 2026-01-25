@@ -17,6 +17,7 @@ sudo kubeadm init \
   --service-cidr=10.99.0.0/16 \
   --pod-network-cidr=10.247.0.0/16 \
   --service-dns-domain=cluster.local \
+  --skip-phases=addon/kube-proxy \
   --cri-socket=unix:///run/containerd/containerd.sock
 
 echo "Setting up kubeconfig..."
