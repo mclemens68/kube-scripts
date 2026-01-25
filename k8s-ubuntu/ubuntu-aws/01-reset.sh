@@ -13,8 +13,8 @@ WK2="ubuntu@${CLUSTER_PREFIX}-wk2-priv.clemenslabs.com"
 
 echo "=== Resetting control-plane node: $(hostname -f) ==="
 
-# Stop kubelet so it doesn't thrash during/after reset
-sudo systemctl disable --now kubelet || true
+# Stop kubelet so it doesn't thrash during/after reset (DO NOT disable)
+sudo systemctl stop kubelet || true
 
 # Reset kubernetes cluster
 sudo kubeadm reset -f || true
@@ -28,14 +28,13 @@ rm -rf "${HOME}/.kube/"* || true
 sudo rm -rf /root/.kube/* || true
 
 # Flush firewall rules (scorched-earth; keep if this is a dedicated lab node)
-# Use -w to wait for the xtables lock instead of failing.
 sudo iptables -w 5 -F || true
 sudo iptables -w 5 -t nat -F || true
 sudo iptables -w 5 -t mangle -F || true
 sudo iptables -w 5 -X || true
 sudo nft flush ruleset || true
 
-# Remove any leftover CRI objects in containerd (e.g., exited CoreDNS pods)
+# Remove any leftover CRI objects in containerd
 if command -v crictl >/dev/null 2>&1; then
   sudo crictl rm -fa || true
   sudo crictl rmp -fa || true
@@ -48,15 +47,15 @@ fi
 
 echo "=== Resetting worker nodes: ${WK1}, ${WK2} ==="
 
-# Run worker reset script (assumes it performs kubeadm reset + CNI cleanup there too)
 ssh -t "${WK1}" '/home/ubuntu/reset.sh'
 ssh -t "${WK2}" '/home/ubuntu/reset.sh'
 
-# Reboot workers:
-# A reboot usually drops the SSH session and returns a non-zero exit code (which would
-# abort the script due to `set -e`). Run reboot detached and ignore SSH disconnect errors.
+# Reboot workers detached
 ssh "${WK1}" 'sudo nohup shutdown -r now >/dev/null 2>&1 &' || true
 ssh "${WK2}" 'sudo nohup shutdown -r now >/dev/null 2>&1 &' || true
+
+# IMPORTANT: ensure kubelet will start on next boot (belt + suspenders)
+sudo systemctl enable kubelet || true
 
 echo "=== Rebooting control-plane node ==="
 sudo reboot

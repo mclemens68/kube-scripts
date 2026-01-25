@@ -6,7 +6,7 @@ fi
 CLUSTER_PREFIX="$1"
 
 ./02_setup-flannel.sh "$CLUSTER_PREFIX"
-./03-cni-flannel-helm.sh
+./03-cni-flannel.sh
 ./04-join.sh "$CLUSTER_PREFIX"
 ./05-set-provider-ids.sh
 ./06-label-nodes.sh "$CLUSTER_PREFIX"
