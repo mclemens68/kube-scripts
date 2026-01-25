@@ -5,7 +5,7 @@ if [ -z "$1" ]; then
 fi
 CLUSTER_PREFIX="$1"
 
-./02_setup-flannel.sh "$CLUSTER_PREFIX"
+./02-setup-flannel.sh "$CLUSTER_PREFIX"
 ./03-cni-flannel.sh
 ./04-join.sh "$CLUSTER_PREFIX"
 ./05-set-provider-ids.sh
