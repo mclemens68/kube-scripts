@@ -7,3 +7,5 @@
 workloader*
 cwp*
 *illumio-cloud-operator*
+illumio-k8s.yaml
+illumio-cven.yaml

@@ -1,11 +1,11 @@
-# Copy this file to illumio-k8s.yaml and update the below info
+# Copy this file to illumio-cven.yaml and update the below info
 # pce_url in the format of fqdn:port
 pce_url: poc3.illum.io:443 
 # cluster_id and cluster_token are copied from the pce when the container cluster is created
-cluster_id: <From UC when cluster is created>
-cluster_token: <From UC when cluster is created>
+cluster_id: 
+cluster_token: 
 # cluster_code is the pairing key from the pce for your kubernetes nodes
-cluster_code: <Pairing key from kube-nodes profile>
+cluster_code: 
 containerRuntime: containerd
 containerManager: kubernetes
 ignore_cert: false

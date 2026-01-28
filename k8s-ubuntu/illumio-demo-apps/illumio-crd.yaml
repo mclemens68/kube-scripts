@@ -8,30 +8,20 @@ nodeLabelMap:
   - allowCreate: true
     fromKey: topology.kubernetes.io/region
     toKey: loc
-    valuesMap:
-      - from: eastus
-        to: azure
-      - from: centralus
-        to: azure
-#- allowCreate: true
-#  fromKey: node-type
-#  toKey: k8s-node
-
-workloadLabelMap:
-  - fromKey: topology.kubernetes.io/region
-    toKey: loc
     allowCreate: true
     valuesMap:
       - from: eastus
-        to: azure
+        to: AKS
       - from: centralus
-        to: azure
+        to: AKS
+      - from: AWS
+        to: AWS      
+
+workloadLabelMap:
   - fromKey: app
     toKey: app
     allowCreate: true
     valuesMap:
-      - from: redis
-        to: guestbook
       - from: yelb-ui
         to: yelb
       - from: yelb-appserver
@@ -40,11 +30,17 @@ workloadLabelMap:
         to: yelb
       - from: redis-server
         to: yelb
-      - from: illumio-kubelink
-        to: illumio-system
-      - from: illumio-storage
-        to: illumio-system
-
-  #- fromKey: stage
-  #  toKey: role
-  #  allowCreate: true
+  - fromKey: tier
+    toKey: role
+    allowCreate: true
+    valuesMap:
+      - from: redis
+        to: db
+      - from: cache
+        to: db
+      - from: backenddb
+        to: db
+      - from: frontend
+        to: web
+      - from: middletier
+        to: app 

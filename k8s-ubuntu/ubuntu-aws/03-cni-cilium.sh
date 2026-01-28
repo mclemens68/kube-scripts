@@ -15,4 +15,9 @@ helm upgrade --install cilium cilium/cilium \
   --wait \
   --set ipam.mode=cluster-pool \
   --set ipam.operator.clusterPoolIPv4PodCIDRList[0]=10.246.0.0/16 \
-  --set ipam.operator.clusterPoolIPv4MaskSize=24
+  --set ipam.operator.clusterPoolIPv4MaskSize=24 \
+  --set hubble.enabled=true \
+  --set hubble.relay.enabled=true \
+  --set hubble.ui.enabled=true \
+  --set hubble.relay.replicas=1 \
+  --set hubble.metrics.enabled="{dns,drop,tcp,flow}"

@@ -15,5 +15,5 @@ CLUSTER_PREFIX="$1"
 ./06-label-nodes.sh "$CLUSTER_PREFIX"
 ./07-install-aws-loadbalancer.sh
 ./08-create-default-storage-class.sh
-ENABLE_HUBBLE_PORTFW=1 ./09-finalize-cilium-dataplane.sh
+./09-finalize-cilium-dataplane.sh
 scp /home/ubuntu/.kube/config ${CLUSTER_PREFIX}-client-priv.clemenslabs.com:/home/ubuntu/.kube/config
