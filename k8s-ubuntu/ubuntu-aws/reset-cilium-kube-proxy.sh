@@ -8,8 +8,8 @@ if [ -z "$1" ]; then
 fi
 CLUSTER_PREFIX="$1"
 
-./02-setup-cilium.sh "$CLUSTER_PREFIX"
-./03-cni-cilium.sh
+./02-setup-cilium-kube-proxy.sh "$CLUSTER_PREFIX"
+./03-cni-cilium-kube-proxy.sh
 ./04-join.sh "$CLUSTER_PREFIX"
 ./05-set-provider-ids.sh
 ./06-label-nodes.sh "$CLUSTER_PREFIX"

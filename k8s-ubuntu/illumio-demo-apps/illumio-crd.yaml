@@ -11,10 +11,18 @@ nodeLabelMap:
     allowCreate: true
     valuesMap:
       - from: eastus
-        to: AKS
+        to: Azure
       - from: centralus
-        to: AKS
+        to: Azure
       - from: AWS
+        to: AWS      
+      - from: us-east-1
+        to: AWS      
+      - from: us-east-2
+        to: AWS      
+      - from: us-west-1
+        to: AWS      
+      - from: us-west-2
         to: AWS      
 
 workloadLabelMap:
