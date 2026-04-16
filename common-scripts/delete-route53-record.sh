@@ -65,6 +65,7 @@ EOF
 aws route53 change-resource-record-sets \
     --hosted-zone-id "$HOSTED_ZONE_ID" \
     --change-batch "$CHANGE_BATCH" \
-    --profile "$AWS_PROFILE"
+    --profile "$AWS_PROFILE" \
+    --no-cli-pager > /dev/null
 
 echo "🗑️ A record for $FQDN deleted from zone $ZONE_NAME (ID: $HOSTED_ZONE_ID) using profile $AWS_PROFILE"

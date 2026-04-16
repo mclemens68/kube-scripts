@@ -29,5 +29,14 @@ if [ ! -f "$1" ]; then
   exit 1
 fi
 
-# Run the helm install command
-helm install illumio -f "$1" --namespace illumio-cloud oci://ghcr.io/illumio/charts/cloud-operator --version "$2" --create-namespace
+read -r -p "Is this an OpenShift cluster? (y/N) " IS_OPENSHIFT
+IS_OPENSHIFT=${IS_OPENSHIFT:-N}
+
+kubectl create namespace illumio-cloud >/dev/null 2>&1 || true
+
+if [[ "$IS_OPENSHIFT" == "y" || "$IS_OPENSHIFT" == "Y" ]]; then
+  oc adm policy add-scc-to-user anyuid -z illumio-cloud-sa -n illumio-cloud
+fi
+
+# Run the helm upgrade command
+helm upgrade --install illumio -f "$1" --namespace illumio-cloud oci://ghcr.io/illumio/charts/cloud-operator --version "$2"
