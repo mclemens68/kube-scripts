@@ -1,10 +1,19 @@
-#create namespace  
-kubectl create namespace argocd  
-#Install as on any other cluster  
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+#!/bin/bash
+set -euo pipefail
 
-# Save ArgoCD password to local file argocd-pw.txt
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d > argocd-pw.txt
+kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
-# Set ArgoCD UI to IP address 192.168.1.3
-kubectl patch service argocd-server -n argocd --patch '{ "spec": { "type": "LoadBalancer", "loadBalancerIP": "192.168.1.3" } }'
+kubectl apply -n argocd \
+  -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+kubectl -n argocd rollout status deploy/argocd-server --timeout=180s
+
+kubectl -n argocd patch service argocd-server \
+  --type='merge' \
+  -p '{"spec":{"type":"LoadBalancer","loadBalancerIP":"192.168.1.3"}}'
+
+kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath="{.data.password}" | base64 -d > argocd-pw.txt
+
+echo
+echo "ArgoCD admin password saved to argocd-pw.txt"

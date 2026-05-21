@@ -1,13 +1,25 @@
-# Add MetalLB repository to Helm, uncomment the first time 
-# helm repo add metallb https://metallb.github.io/metallb
+#!/bin/bash
+set -euo pipefail
 
-# Check the added repository
-helm search repo metallb
+helm repo add metallb https://metallb.github.io/metallb || true
+helm repo update
 
-# Create metallb-system namespace
 kubectl apply -f metallb-ns.yaml
 
-# Install MetalLB
-helm install metallb metallb/metallb --namespace metallb-system --wait
+helm upgrade --install metallb metallb/metallb \
+  --namespace metallb-system \
+  --wait
 
 kubectl apply -f metallb.yaml
+
+echo
+echo "Waiting for MetalLB pods..."
+kubectl wait --namespace metallb-system \
+  --for=condition=Ready pods \
+  --all \
+  --timeout=180s
+
+echo
+kubectl get pods -n metallb-system
+echo
+kubectl get ipaddresspools,l2advertisements -n metallb-system
