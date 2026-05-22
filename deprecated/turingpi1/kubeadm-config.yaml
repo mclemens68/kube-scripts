@@ -2,7 +2,7 @@
 kind: ClusterConfiguration
 apiVersion: kubeadm.k8s.io/v1beta3
 
-kubernetesVersion: v1.28.3
+kubernetesVersion: v1.36.1
 clusterName: turingpi
 controlPlaneEndpoint: turingpi-api.clemenshome.com:6443
 
