@@ -2,10 +2,8 @@
 set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
-
 K8S_MINOR="v1.36"
 
-# Auto-restart services during apt upgrades; avoid needrestart prompts
 sudo mkdir -p /etc/needrestart/conf.d
 echo '$nrconf{restart} = "a";' | sudo tee /etc/needrestart/conf.d/99-auto-restart.conf >/dev/null
 
@@ -18,13 +16,7 @@ fi
 
 CURRENT_HOSTNAME=$(hostname)
 
-echo
-echo "Current hostname: ${CURRENT_HOSTNAME}"
-echo "Requested hostname: ${NEW_HOSTNAME}"
-echo
-
 if [[ "${CURRENT_HOSTNAME}" != "${NEW_HOSTNAME}" ]]; then
-  echo "Updating hostname..."
   sudo hostnamectl set-hostname "${NEW_HOSTNAME}"
 
   if grep -q '^127.0.1.1' /etc/hosts; then
@@ -32,15 +24,9 @@ if [[ "${CURRENT_HOSTNAME}" != "${NEW_HOSTNAME}" ]]; then
   else
     echo "127.0.1.1 ${NEW_HOSTNAME}" | sudo tee -a /etc/hosts >/dev/null
   fi
-
-  echo "Hostname updated to ${NEW_HOSTNAME}"
-else
-  echo "Hostname already correct."
 fi
 
-echo
 hostnamectl
-echo
 
 sudo apt-get update
 
@@ -52,7 +38,7 @@ sudo apt-get -y \
 sudo apt-get install -y \
   -o Dpkg::Options::="--force-confdef" \
   -o Dpkg::Options::="--force-confold" \
-  vim git netcat-openbsd chrony jq curl gnupg ca-certificates apt-transport-https
+  vim git netcat-openbsd chrony jq curl gnupg ca-certificates apt-transport-https nfs-common
 
 sudo timedatectl set-timezone America/Chicago
 sudo systemctl enable --now chrony
@@ -113,7 +99,7 @@ sudo chmod a+r /etc/apt/keyrings/docker.gpg
 . /etc/os-release
 
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${VERSION_CODENAME} stable" \
-  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
 
 sudo apt-get update
 sudo apt-get install -y containerd.io
@@ -121,8 +107,10 @@ sudo apt-get install -y containerd.io
 sudo mkdir -p /etc/containerd
 containerd config default | sudo tee /etc/containerd/config.toml >/dev/null
 sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
-
 sudo systemctl enable --now containerd
+
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+helm version
 
 sudo install -m 0755 -d /etc/apt/keyrings
 
@@ -130,13 +118,35 @@ curl -fsSL "https://pkgs.k8s.io/core:/stable:/${K8S_MINOR}/deb/Release.key" \
   | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
 echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/${K8S_MINOR}/deb/ /" \
-  | sudo tee /etc/apt/sources.list.d/kubernetes.list > /dev/null
+  | sudo tee /etc/apt/sources.list.d/kubernetes.list >/dev/null
 
 sudo apt-get update
 sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
-
 sudo systemctl enable kubelet
+
+read -rp "Configure this node as NFS server for Kubernetes storage? [y/N]: " CONFIGURE_NFS_SERVER
+
+if [[ "${CONFIGURE_NFS_SERVER,,}" == "y" ]]; then
+  sudo apt-get install -y nfs-kernel-server
+
+  sudo mkdir -p /data
+  sudo chown nobody:nogroup /data
+  sudo chmod 0777 /data
+
+  sudo mkdir -p /etc/exports.d
+
+  echo '/data *(rw,sync,no_subtree_check,no_root_squash)' | \
+    sudo tee /etc/exports.d/k8s-data.exports >/dev/null
+
+  sudo exportfs -ra
+  sudo systemctl enable --now nfs-server
+  sudo systemctl restart nfs-server
+
+  echo
+  showmount -e localhost
+  sudo exportfs -v
+fi
 
 echo
 echo "Installed versions:"
@@ -144,6 +154,14 @@ kubeadm version
 kubectl version --client=true
 kubelet --version
 containerd --version
+
+K9S_VERSION=$(curl -fsSL https://api.github.com/repos/derailed/k9s/releases/latest | jq -r .tag_name)
+
+curl -LO "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_arm64.tar.gz"
+tar -xzf k9s_Linux_arm64.tar.gz
+sudo mv k9s /usr/local/bin/
+rm -f LICENSE README.md k9s_Linux_arm64.tar.gz
+k9s version
 
 echo
 echo "Node prep complete."

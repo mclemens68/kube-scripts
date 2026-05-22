@@ -8,16 +8,12 @@ kubectl apply -f metallb-ns.yaml
 
 helm upgrade --install metallb metallb/metallb \
   --namespace metallb-system \
-  --wait
+  --wait \
+  --set frrk8s.enabled=false \
+  --set prometheus.serviceMonitor.enabled=false \
+  --set prometheus.prometheusRule.enabled=false
 
 kubectl apply -f metallb.yaml
-
-echo
-echo "Waiting for MetalLB pods..."
-kubectl wait --namespace metallb-system \
-  --for=condition=Ready pods \
-  --all \
-  --timeout=180s
 
 echo
 kubectl get pods -n metallb-system

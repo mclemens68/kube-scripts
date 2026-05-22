@@ -3,10 +3,10 @@ set -euo pipefail
 
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
-kubectl apply -n argocd \
+kubectl apply --server-side -n argocd \
   -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-kubectl -n argocd rollout status deploy/argocd-server --timeout=180s
+kubectl -n argocd rollout status deploy/argocd-server --timeout=300s
 
 kubectl -n argocd patch service argocd-server \
   --type='merge' \
@@ -17,3 +17,4 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 
 echo
 echo "ArgoCD admin password saved to argocd-pw.txt"
+kubectl -n argocd get svc argocd-server

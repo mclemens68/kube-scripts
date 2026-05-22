@@ -9,3 +9,13 @@ cwp*
 *illumio-cloud-operator*
 illumio-k8s.yaml
 illumio-cven.yaml
+# Kubernetes / cluster generated
+argocd-pw.txt
+*.tar.gz
+# Local kube configs
+.kube/
+# Temporary files
+*.swp
+*.swo
+join-*.sh
+join-*.txt
