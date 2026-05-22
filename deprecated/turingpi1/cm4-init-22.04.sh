@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export DEBIAN_FRONTEND=noninteractive
+
 K8S_MINOR="v1.36"
+
+# Auto-restart services during apt upgrades; avoid needrestart prompts
+sudo mkdir -p /etc/needrestart/conf.d
+echo '$nrconf{restart} = "a";' | sudo tee /etc/needrestart/conf.d/99-auto-restart.conf >/dev/null
 
 read -rp "Enter hostname for this node (e.g. turingpi1): " NEW_HOSTNAME
 
@@ -36,9 +42,17 @@ echo
 hostnamectl
 echo
 
-sudo apt update
-sudo apt -y upgrade
-sudo apt -y install vim git netcat-openbsd chrony jq curl gnupg ca-certificates apt-transport-https
+sudo apt-get update
+
+sudo apt-get -y \
+  -o Dpkg::Options::="--force-confdef" \
+  -o Dpkg::Options::="--force-confold" \
+  upgrade
+
+sudo apt-get install -y \
+  -o Dpkg::Options::="--force-confdef" \
+  -o Dpkg::Options::="--force-confold" \
+  vim git netcat-openbsd chrony jq curl gnupg ca-certificates apt-transport-https
 
 sudo timedatectl set-timezone America/Chicago
 sudo systemctl enable --now chrony
@@ -63,8 +77,8 @@ done
 
 sudo swapoff -a || true
 sudo sed -i.bak '/ swap / s/^/#/' /etc/fstab || true
-sudo apt purge -y dphys-swapfile || true
-sudo apt -y autoremove
+sudo apt-get purge -y dphys-swapfile || true
+sudo apt-get autoremove -y
 sudo rm -f /var/swap /swapfile
 
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
@@ -101,8 +115,8 @@ sudo chmod a+r /etc/apt/keyrings/docker.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${VERSION_CODENAME} stable" \
   | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-sudo apt update
-sudo apt-get -y install containerd.io
+sudo apt-get update
+sudo apt-get install -y containerd.io
 
 sudo mkdir -p /etc/containerd
 containerd config default | sudo tee /etc/containerd/config.toml >/dev/null
@@ -118,8 +132,8 @@ curl -fsSL "https://pkgs.k8s.io/core:/stable:/${K8S_MINOR}/deb/Release.key" \
 echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/${K8S_MINOR}/deb/ /" \
   | sudo tee /etc/apt/sources.list.d/kubernetes.list > /dev/null
 
-sudo apt update
-sudo apt install -y kubelet kubeadm kubectl
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 
 sudo systemctl enable kubelet
